@@ -7,6 +7,10 @@
 #include <stdatomic.h>
 #include <stdbool.h>
 
+#ifdef __cplusplus
+    extern "C" {
+#endif
+
 typedef enum {
     LOGGER_DEBUG,
     LOGGER_INFO, 
@@ -88,5 +92,8 @@ void logger_log(LOGGER_TYPE level, const char* file, int line, const char* fmt, 
 #define LOG_ERROR(...)      logger_log(LOGGER_ERROR, __FILE__, __LINE__, __VA_ARGS__) 
 #define LOG_FATAL(...)      logger_log(LOGGER_FATAL, __FILE__, __LINE__, __VA_ARGS__) 
 
+#ifdef __cplusplus
+    }
+#endif
 
 #endif
