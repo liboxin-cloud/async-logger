@@ -111,6 +111,7 @@ CONFIG_STATUS load_logger_config(const char* filename, LOGGER_CONFIG_T* config) 
             config->output_console = true;
             config->output_file = false;
             strcpy(config->log_file_path, "./log_output.txt");
+            config->show_location = false;
             return -1; 
         }
     }
@@ -120,6 +121,8 @@ CONFIG_STATUS load_logger_config(const char* filename, LOGGER_CONFIG_T* config) 
     config->output_file = false;
     strcpy(config->log_file_path, "./log_output.txt");
     
+    
+
     char line[512];
     char key[128], value[256];
     char current_section[64] = "";
@@ -154,6 +157,8 @@ CONFIG_STATUS load_logger_config(const char* filename, LOGGER_CONFIG_T* config) 
                 config->output_file = str_to_bool(value);
             } else if (strcmp(key, "log_file_path") == 0) {
                 strcpy(config->log_file_path, value);
+            } else if (strcmp(key,"show_location") == 0) {
+                config->show_location = str_to_bool(value);
             } else {
                 fprintf(stderr, "Warning: Unknown config key '%s' in logger.ini\n", key);
             }
@@ -215,9 +220,13 @@ static CONFIG_STATUS create_default_config(const char* filename) {
     
     fprintf(fp, "; logger file path(relative path)\n");
     fprintf(fp, "log_file_path = ./log_output.txt\n\n");
+
+    fprintf(fp, "; show the line in the source code file like [main.cpp 1]\n");
+    fprintf(fp, "show_location = false\n\n"); 
     
     fprintf(fp, "; [INFO]: modify the ini file and restart the program to work\n");
     
+
     fclose(fp);
     printf("Created default configuration file: %s\n", filename);
     return 0;

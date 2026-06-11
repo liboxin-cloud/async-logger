@@ -8,6 +8,7 @@ typedef struct {
     bool output_console;
     bool output_file;
     char log_file_path[512];
+    bool show_location;
 }LOGGER_CONFIG_T;
 
 typedef int CONFIG_STATUS;

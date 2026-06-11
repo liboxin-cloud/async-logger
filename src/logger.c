@@ -47,6 +47,7 @@ const char* g_log_file_path = "./log_output.txt";
 bool g_output_to_file = false;
 bool g_output_to_console = true;
 static FILE* g_fp = NULL;
+atomic_bool g_show_location = false;
 
 #ifdef _WIN32
     static COLOR_TYPE get_logger_color(LOGGER_TYPE level) {
@@ -184,15 +185,19 @@ void logger_init(void) {
     if (load_logger_config("logger.ini", &g_config) == 0) {
 
         int level = config_level_to_enum(g_config.logger_level);
-        atomic_store(&g_min_log_level, level);
+        if (level >= 0) {
+            atomic_store(&g_min_log_level, level);
+        }
         atomic_store(&g_output_to_console, g_config.output_console);
         atomic_store(&g_output_to_file, g_config.output_file);
+        atomic_store(&g_show_location, g_config.show_location);
         g_log_file_path = strdup(g_config.log_file_path);  
     } else {
      
         atomic_store(&g_min_log_level, LOGGER_DEBUG);
         atomic_store(&g_output_to_console, true);
         atomic_store(&g_output_to_file, false);
+        atomic_store(&g_show_location, true);
         g_log_file_path = "./log_output.txt";
     }
 
@@ -250,7 +255,7 @@ void logger_shutdown(void) {
 }
 
 void logger_log(LOGGER_TYPE level, const char* file, int line, const char* fmt, ...) {
-    if (level < g_min_log_level) {
+    if (level < atomic_load(&g_min_log_level)) {
         return;
     }
     char time_buf[32];
@@ -278,11 +283,22 @@ void logger_log(LOGGER_TYPE level, const char* file, int line, const char* fmt, 
     }
 
     char line_buf[MAX_LOG_MSG + 128];
-    int header_len = snprintf(line_buf, sizeof(line_buf), "[%s] [%s] [%s:%d] ",
-                              time_buf, get_level_str(level), file, line);
+    //int header_len = snprintf(line_buf, sizeof(line_buf), "[%s] [%s] [%s:%d] ",
+                              //time_buf, get_level_str(level), file, line);
     
-    int total_len = header_len + body_len;
+    int total_len;
+    int header_len; 
     int max_total_len = MAX_LOG_MSG - 1;   
+
+    if (atomic_load(&g_show_location)) {
+        header_len = snprintf(line_buf, sizeof(line_buf), "[%s] [%s] [%s:%d] ",
+                              time_buf, get_level_str(level), file, line);
+    } else {
+        header_len = snprintf(line_buf, sizeof(line_buf), "[%s] [%s] ",
+                              time_buf, get_level_str(level));
+    }
+
+    total_len = header_len + body_len;
     if (total_len >= max_total_len) {
         total_len = max_total_len - 1;     
         body_len = total_len - header_len;

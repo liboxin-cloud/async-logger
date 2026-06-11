@@ -80,7 +80,7 @@ extern LOGGER_TYPE g_min_log_level;
 extern bool g_output_to_console;         
 extern bool g_output_to_file;            
 extern const char* g_log_file_path;      
-
+extern atomic_bool g_show_location;
 
 void logger_init(void);
 void logger_shutdown(void);
