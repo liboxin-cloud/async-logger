@@ -11,6 +11,14 @@
     extern "C" {
 #endif
 
+#ifdef __cplusplus
+    #include <atomic>
+    typedef std::atomic_bool atomic_bool;
+    typedef std::atomic_int atomic_int;
+#else
+    #include <stdatomic.h>
+#endif
+
 typedef enum {
     LOGGER_DEBUG,
     LOGGER_INFO, 
